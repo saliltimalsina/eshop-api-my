@@ -4,7 +4,7 @@ const router = express.Router();
 // we have to use {} in Product because model is returning an object
 const { Product } = require("../models/product");
 const mongoose = require("mongoose");
-const jwt = require('../helper/jwt');
+const jwt = require('../middleware/jwt');
 
 // router.get("/", async (req, res) => {
 //   // const productList = await Product.find().select("name image -_id"); // if you want the specific columns
