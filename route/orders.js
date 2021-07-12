@@ -19,8 +19,11 @@ router.get("/:id", async (req, res) => {
   const order = await Order.findById(req.params.id)
     .populate("user", "username")
     .populate({
-      path: "orderItem",
-      populate: 'product',
+      path: "orderItems",
+      populate: {
+        path: "product",
+        populate: "category",
+      },
     });
 
   if (!order)
