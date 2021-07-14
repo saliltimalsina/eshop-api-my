@@ -36,6 +36,7 @@ router.post("/login", async (req, res) => {
   const secretKey = process.env.SECRET_KEY;
 
   if (user) {
+    // dont use bcryptjs
     if (bcrypt.compareSync(req.body.password, user.password)) {
       // create a token
       const token = jwt.sign(
@@ -57,10 +58,10 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.get('/get/count', async (req, res)=>{
+router.get("/get/count", async (req, res) => {
   const count = await User.count();
   res.json(count);
-})
+});
 
 router.delete("/:id", async (req, res) => {
   const user = await User.findById(req.params.id);

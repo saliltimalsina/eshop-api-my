@@ -19,11 +19,13 @@ router.get("/", async (req, res) => {
 //Get all orders by user
 router.get("/get/userorders/:id", async (req, res) => {
   const orders = await Order.find({ user: req.params.id })
-  .populate({
-    path: 'orderItems', populate: {
-      path: 'product',populate:'category'
-    }
-  })
+    .populate({
+      path: "orderItems",
+      populate: {
+        path: "product",
+        populate: "category",
+      },
+    })
     .sort({ dateOrdered: -1 });
 
   if (!orders)

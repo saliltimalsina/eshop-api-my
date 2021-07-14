@@ -4,7 +4,9 @@ const router = express.Router();
 // we have to use {} in Product because model is returning an object
 const { Product } = require("../models/product");
 const mongoose = require("mongoose");
-const jwt = require('../middleware/jwt');
+const jwt = require("../middleware/jwt");
+const multer = require("multer");
+const { findOneAndRemove } = require("../models/order-item");
 
 // router.get("/", async (req, res) => {
 //   // const productList = await Product.find().select("name image -_id"); // if you want the specific columns
@@ -16,7 +18,7 @@ const jwt = require('../middleware/jwt');
 //   }
 // });
 
-router.get("/:id",jwt, async (req, res) => {
+router.get("/:id", jwt, async (req, res) => {
   const product = await Product.findById(req.params.id).populate("category"); // display category in product
   if (!product) {
     res.status(401).json({
@@ -31,16 +33,54 @@ router.get("/:id",jwt, async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+//Validate upload file
+const FILE_TYPE_MAP = {
+  "image/jpeg": "jpeg",
+  "image/png": "png",
+  "image/jpg": "jpg",
+};
+const a = 2;
+
+//Upload image to server
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const isValid = FILE_TYPE_MAP[file.mimetype];
+    //validate weather the file is a valid image
+    if (!isValid) cb(new Error("Invalid file type"), "/public/uploads");
+    else cb(null, "/public/uploads"); // path where we upload an image
+  },
+  filename: function (req, file, cb) {
+    //to replace the spaces from the image name
+    const fileName = file.originalname
+      .replace(/\s+/g, "-")
+      .replace(/[^a-zA-Z0-9-_\.]/g, "");
+
+    const extension = FILE_TYPE_MAP[file.mimetype];
+    cb(null, `${fileName} + "-" + ${Date.now()} + ${extension}`);
+  },
+});
+
+var upload = multer({ storage: storage });
+
+//Upload a single image to server
+router.post("/", upload.single("image"), async (req, res) => {
   const category = await Category.findById(req.body.category);
   if (!category) {
     return res.status(400).send("Invalid category");
   } else {
+    // Get the filename
+    const fileName = req.file.filename;
+    console.log(fileName);
+    // req.protocol = "http";
+    // req.get = localhost:3000/
+    const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
+    //const basePath = `http://localhost:3000/public/uploads/`;
+
     const product = new Product({
       name: req.body.name,
       description: req.body.description,
       richDescription: req.body.richDescription,
-      image: req.body.image,
+      image: `${basePath}${fileName}.jpg`,
       brand: req.body.brand,
       price: req.body.price,
       category: req.body.category,
@@ -65,6 +105,40 @@ router.post("/", async (req, res) => {
   }
 });
 
+// Add product without image
+// router.post("/", async (req, res) => {
+//   const category = await Category.findById(req.body.category);
+//   if (!category) {
+//     return res.status(400).send("Invalid category");
+//   } else {
+//     const product = new Product({
+//       name: req.body.name,
+//       description: req.body.description,
+//       richDescription: req.body.richDescription,
+//       image: req.body.image,
+//       brand: req.body.brand,
+//       price: req.body.price,
+//       category: req.body.category,
+//       countInStock: req.body.countInStock,
+//       rating: req.body.rating,
+//       numReviews: req.body.numReviews,
+//       isFeatured: req.body.isFeatured,
+//     });
+
+//     //You can use .then() and .catch() or you can use async and await
+//     await product
+//       .save()
+//       .then((createdProduct) => {
+//         res.status(201).json({ success: true, createdProduct });
+//       })
+//       .catch((err) => {
+//         res.status(500).json({
+//           error: err,
+//           success: false,
+//         });
+//       });
+//   }
+// });
 router.put("/:id", async (req, res) => {
   //If the :id is not in _id format then this message will be shown
   if (!mongoose.isValidObjectId(req.params.id)) {
@@ -149,7 +223,7 @@ router.get("/get/featured/:count", async (req, res) => {
   const featuredProducts = await Product.find({ isFeatured: true })
     .populate("category")
     .limit(+count); //+ means convert string to number
-    
+
   if (!featuredProducts) {
     res.status(500).json({ success: false });
   } else {
@@ -158,7 +232,7 @@ router.get("/get/featured/:count", async (req, res) => {
 });
 
 //get all products based on categories using query parameter not as params or body
-// get all the product and also the categories if user is passing through the query parameter 
+// get all the product and also the categories if user is passing through the query parameter
 router.get("/", async (req, res) => {
   // localhost:3000/api/v1/products?categories=1234,345
   let categories = {};
@@ -174,6 +248,5 @@ router.get("/", async (req, res) => {
     res.status(201).json({ success: true, data: productList });
   }
 });
-
 
 module.exports = router;

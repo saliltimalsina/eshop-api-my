@@ -4,6 +4,7 @@ const app = express();
 const connectDB = require("./config/db");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const path = require("path");
 require('colors');
 
 //Before using any services enable CORS
@@ -17,6 +18,7 @@ dotenv.config({
 
 //connect to mongodb server
 connectDB();
+app.use(express.static(path.join(__dirname, "public")));
 
 //Constants and routes
 const api = process.env.API_URL;
