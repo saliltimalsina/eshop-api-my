@@ -18,7 +18,8 @@ dotenv.config({
 
 //connect to mongodb server
 connectDB();
-app.use(express.static(path.join(__dirname, "public")));
+
+app.use("/public/uploads", express.static(path.join(__dirname, "/public/uploads")));
 
 //Constants and routes
 const api = process.env.API_URL;
@@ -26,17 +27,17 @@ const productRouter = require("./route/product");
 const categoryRouter = require("./route/category");
 const userRouter = require("./route/user");
 const orderRouter = require('./route/orders');
+
 //Middleware
 app.use(morgan("tiny"));
 app.use(express.json());
-// app.use(express.urlencoded({urlencoded:true}))
+app.use(express.urlencoded({urlencoded:true}))
 
 //Routers
 app.use(`${api}/user`, userRouter);
 app.use(`${api}/products`, productRouter);
 app.use(`${api}/category`, categoryRouter);
 app.use(`${api}/orders`, orderRouter);
-
 
 // Display message in home page
 app.get("/", (req, res) => {
