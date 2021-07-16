@@ -7,7 +7,6 @@ const mongoose = require("mongoose");
 const jwt = require("../middleware/jwt");
 const multer = require("multer");
 const { findOneAndRemove } = require("../models/order-item");
-
 // router.get("/", async (req, res) => {
 //   // const productList = await Product.find().select("name image -_id"); // if you want the specific columns
 //   const productList = await Product.find();
@@ -39,48 +38,45 @@ const FILE_TYPE_MAP = {
   "image/png": "png",
   "image/jpg": "jpg",
 };
-const a = 2;
 
 //Upload image to server
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const isValid = FILE_TYPE_MAP[file.mimetype];
     //validate weather the file is a valid image
-    if (!isValid) cb(new Error("Invalid file type"), "/public/uploads");
-    else cb(null, "/public/uploads"); // path where we upload an image
+    if (!isValid) cb(new Error("Invalid file type"), "./public/uploads");
+    else cb(null,"./public/uploads"); // path where we upload an image
   },
   filename: function (req, file, cb) {
-    //to replace the spaces from the image name
-    const fileName = file.originalname
-      .replace(/\s+/g, "-")
-      .replace(/[^a-zA-Z0-9-_\.]/g, "");
-
     const extension = FILE_TYPE_MAP[file.mimetype];
-    cb(null, `${fileName} + "-" + ${Date.now()} + ${extension}`);
+    cb(null, `IMG-${Date.now()}.${extension}`);
   },
 });
 
-var upload = multer({ storage: storage });
+var uploadOptions = multer({ storage: storage });
 
 //Upload a single image to server
-router.post("/", upload.single("image"), async (req, res) => {
+router.post("/", uploadOptions.single("image"), async (req, res) => {
   const category = await Category.findById(req.body.category);
+  const file = req.file;
   if (!category) {
     return res.status(400).send("Invalid category");
-  } else {
-    // Get the filename
+  }
+  else if(!file){
+    return res.status(400).send("Please upload an image");
+  }  
+  else {
+    // Get the filename from multer
     const fileName = req.file.filename;
-    console.log(fileName);
     // req.protocol = "http";
     // req.get = localhost:3000/
     const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
-    //const basePath = `http://localhost:3000/public/uploads/`;
 
     const product = new Product({
       name: req.body.name,
       description: req.body.description,
       richDescription: req.body.richDescription,
-      image: `${basePath}${fileName}.jpg`,
+      image: `${basePath}${fileName}`,
       brand: req.body.brand,
       price: req.body.price,
       category: req.body.category,
