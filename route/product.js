@@ -57,35 +57,51 @@ var uploadOptions = multer({ storage: storage });
 
 //Upload a single image to server
 router.post("/", uploadOptions.single("image"), async (req, res) => {
+  const product = new Product({
+    name: req.body.name,
+    description: req.body.description,
+    richDescription: req.body.richDescription,
+    // image: `${basePath}${fileName}`,
+    brand: req.body.brand,
+    price: req.body.price,
+    category: req.body.category,
+    countInStock: req.body.countInStock,
+    rating: req.body.rating,
+    numReviews: req.body.numReviews,
+    isFeatured: req.body.isFeatured,
+  });
   const category = await Category.findById(req.body.category);
   const file = req.file;
   if (!category) {
     return res.status(400).send("Invalid category");
   }
-  else if(!file){
-    return res.status(400).send("Please upload an image");
-  }  
-  else {
+  // else if(!file){   
+    
+  //   return res.status(400).send("Please upload an image");
+  // }  
+  else if(file){
     // Get the filename from multer
     const fileName = req.file.filename;
     // req.protocol = "http";
     // req.get = localhost:3000/
     const basePath = `${req.protocol}://${req.get("host")}/public/uploads/`;
 
-    const product = new Product({
-      name: req.body.name,
-      description: req.body.description,
-      richDescription: req.body.richDescription,
-      image: `${basePath}${fileName}`,
-      brand: req.body.brand,
-      price: req.body.price,
-      category: req.body.category,
-      countInStock: req.body.countInStock,
-      rating: req.body.rating,
-      numReviews: req.body.numReviews,
-      isFeatured: req.body.isFeatured,
-    });
-
+    product.image = basePath + fileName;
+    
+    // const product = new Product({
+    //   name: req.body.name,
+    //   description: req.body.description,
+    //   richDescription: req.body.richDescription,
+    //   image: `${basePath}${fileName}`,
+    //   brand: req.body.brand,
+    //   price: req.body.price,
+    //   category: req.body.category,
+    //   countInStock: req.body.countInStock,
+    //   rating: req.body.rating,
+    //   numReviews: req.body.numReviews,
+    //   isFeatured: req.body.isFeatured,
+    // });
+  }
     //You can use .then() and .catch() or you can use async and await
     await product
       .save()
@@ -98,7 +114,7 @@ router.post("/", uploadOptions.single("image"), async (req, res) => {
           success: false,
         });
       });
-  }
+  
 });
 
 // Add product without image
