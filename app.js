@@ -7,6 +7,7 @@ const dotenv = require("dotenv");
 const path = require("path");
 require('colors');
 
+var a =2;
 //Before using any services enable CORS
 app.use(cors());
 app.options("*", cors()); // * means allow all the http request to pass from any other region
