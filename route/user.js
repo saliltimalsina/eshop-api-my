@@ -54,7 +54,7 @@ router.post("/login", async (req, res) => {
         .json({ success: false, error: "Invalid username or password" });
     }
   } else {
-    res.status(404).send("User not found");
+    res.status(404).json({ success: false, error: "User not found" });
   }
 });
 
