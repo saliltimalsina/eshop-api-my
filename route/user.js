@@ -24,10 +24,14 @@ router.post("/", async (req, res) => {
   await user
     .save()
     .then(() => {
-      res.json(user);
+      res.json({
+        success: true,
+      });
     })
     .catch((err) => {
-      res.status(500).send(err);
+      res.status(500).json({
+        success:false,
+      });
     });
 });
 
