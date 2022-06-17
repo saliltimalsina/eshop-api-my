@@ -15,10 +15,9 @@ router.post("/", async (req, res) => {
     email: req.body.email,
     username: req.body.username,
     password: bcrypt.hashSync(req.body.password, 10),
-    isAdmin: req.body.isAdmin,
+
     address: req.body.address,
-    country: req.body.country,
-    phone: req.body.phone,
+
   });
 
   await user
